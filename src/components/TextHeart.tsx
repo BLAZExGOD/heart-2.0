@@ -19,12 +19,13 @@ export default function TextHeart() {
 
     let animationFrameId: number;
     let points: Point[] = [];
-    const text = "i love you Andriana";
-    const fontSize = 14;
+    const text = "i love you andriana"; // ваш текст
+
+    const getFontSize = () => (window.innerWidth < 480 ? 10 : 14);
 
     const resize = () => {
       canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
       initPoints();
     };
 
@@ -32,16 +33,14 @@ export default function TextHeart() {
       points = [];
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      const scale = Math.min(canvas.width, canvas.height) / 45;
+      // меньше делитель = меньше сердце, *0.85 = запас по краям
+      const scale = (Math.min(canvas.width, canvas.height) / 55) * 0.85;
 
-      // Heart equation: 
-      // x = 16 sin^3(t)
-      // y = -(13 cos(t) - 5 cos(2t) - 2 cos(3t) - cos(4t))
-      
-      for (let t = 0; t < Math.PI * 2; t += 0.05) {
+      // основной контур — шаг увеличен, точек меньше
+      for (let t = 0; t < Math.PI * 2; t += 0.09) {
         const x = 16 * Math.pow(Math.sin(t), 3);
         const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-        
+
         points.push({
           x: centerX + x * scale,
           y: centerY + y * scale,
@@ -51,20 +50,20 @@ export default function TextHeart() {
         });
       }
 
-      // Add inner layers
-      for (let s = 0.2; s < 1; s += 0.2) {
-          for (let t = 0; t < Math.PI * 2; t += 0.1) {
-            const x = 16 * Math.pow(Math.sin(t), 3);
-            const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-            
-            points.push({
-              x: centerX + x * scale * s,
-              y: centerY + y * scale * s,
-              alpha: 0,
-              targetAlpha: 0.4 + Math.random() * 0.4,
-              delay: Math.random() * 3000
-            });
-          }
+      // внутренние слои — было 4, теперь 2
+      for (let s = 0.35; s < 1; s += 0.35) {
+        for (let t = 0; t < Math.PI * 2; t += 0.16) {
+          const x = 16 * Math.pow(Math.sin(t), 3);
+          const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+
+          points.push({
+            x: centerX + x * scale * s,
+            y: centerY + y * scale * s,
+            alpha: 0,
+            targetAlpha: 0.4 + Math.random() * 0.4,
+            delay: Math.random() * 3000
+          });
+        }
       }
     };
 
@@ -72,13 +71,14 @@ export default function TextHeart() {
     const draw = (time: number) => {
       if (!start) start = time;
       const elapsed = time - start;
+      const fontSize = getFontSize();
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.font = `${fontSize}px "Fira Code", monospace`;
-      
+
       points.forEach(p => {
         if (elapsed > p.delay) {
-            p.alpha += (p.targetAlpha - p.alpha) * 0.02;
+          p.alpha += (p.targetAlpha - p.alpha) * 0.02;
         }
 
         ctx.fillStyle = `rgba(255, 77, 109, ${p.alpha})`;
@@ -89,18 +89,20 @@ export default function TextHeart() {
     };
 
     window.addEventListener('resize', resize);
+    window.visualViewport?.addEventListener('resize', resize);
     resize();
     animationFrameId = requestAnimationFrame(draw);
 
     return () => {
       window.removeEventListener('resize', resize);
+      window.visualViewport?.removeEventListener('resize', resize);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
   return (
-    <canvas 
-      ref={canvasRef} 
+    <canvas
+      ref={canvasRef}
       className="fixed inset-0 w-full h-full pointer-events-none"
     />
   );
