@@ -19,7 +19,7 @@ export default function TextHeart() {
 
     let animationFrameId: number;
     let points: Point[] = [];
-    const text = "i love you";
+    const text = "i love you Andriana";
     const fontSize = 14;
 
     const resize = () => {
