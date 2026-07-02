@@ -52,7 +52,7 @@ export default function App() {
               <div className="flex gap-2 text-pink-soft/60">
                 <span>[system]</span>
                 <Typewriter 
-                  text="Initializing heart.PROTOCOL_v2.0..." 
+                  text="Initializing My love for you..." 
                   delay={30} 
                   onComplete={() => setConsoleFinished(true)}
                 />
